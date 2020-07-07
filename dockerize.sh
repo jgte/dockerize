@@ -139,8 +139,8 @@ RUN git clone --recurse-submodules $($BASH_SOURCE github) . && rm -fr .git $($BA
     done
   ;;
   git-push) #git adds, commits and pushes all new changes
-    $DIR/dockerize/git.sh
-    $DIR/git.sh
+    cd $DIR/dockerize && ./git.sh
+    cd $DIR && ./git.sh
   ;;
   push) #pushes images to dockerhub
     $BASH_SOURCE is-docker-running || exit 1

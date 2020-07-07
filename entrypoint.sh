@@ -11,8 +11,7 @@ case "$1" in
   modes) #shows all available modes
     grep ') #' $BASH_SOURCE \
       | grep -v grep \
-      | sed 's:)::g' \
-      | column -t -s\#
+      | sed 's:)::g' 
   ;;
   apps) #slows all avalable apps
     for i in $(find $APPDIR -name \*sh -or -name \*py); do basename $i; done
@@ -23,7 +22,7 @@ case "$1" in
   example-*) #shows the test script of an app
     exec cat $APPDIR/test/test-${1/example-}
   ;;
-  help)
+  help) #show the help string
     echo "\
 Possible arguments:
 - mode

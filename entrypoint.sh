@@ -15,7 +15,7 @@ case "$1" in
       | column -t -s\#
   ;;
   apps) #slows all avalable apps
-    for i in $(ls $APPDIR/plot*sh); do basename $i; done
+    for i in $(find $APPDIR -name \*sh -or -name \*py); do basename $i; done
   ;;
   test-*) #tests an app; some may not yet have a test
     exec $APPDIR/test/${1%.sh}.sh --outdir $IODIR ${@:2}

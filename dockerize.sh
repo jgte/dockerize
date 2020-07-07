@@ -148,6 +148,7 @@ RUN git clone --recurse-submodules $($BASH_SOURCE github) . && rm -fr .git $($BA
   ;;
   build) #build the docker image
     $BASH_SOURCE is-docker-running || exit 1
+    $BASH_SOURCE clean-images
     $BASH_SOURCE git-push
     $BASH_SOURCE dockerfile \
       | docker build -t $($BASH_SOURCE image-name) -

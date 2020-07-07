@@ -11,6 +11,7 @@ case "$1" in
   modes) #shows all available modes
     grep ') #' $BASH_SOURCE \
       | grep -v grep \
+      | grep -v sed \
       | sed 's_) #_ : _g' \
   ;;
   apps) #slows all avalable apps

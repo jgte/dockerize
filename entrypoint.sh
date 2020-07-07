@@ -11,7 +11,7 @@ case "$1" in
   modes) #shows all available modes
     grep ') #' $BASH_SOURCE \
       | grep -v grep \
-      | sed 's:)::g' 
+      | sed 's_) #_ : _g' \
   ;;
   apps) #slows all avalable apps
     for i in $(find $APPDIR -name \*sh -or -name \*py); do basename $i; done

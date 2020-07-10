@@ -120,6 +120,7 @@ RUN $RUN_MORE"
   echo "\
 FROM $($BASH_SOURCE base-image-name) AS builder
 WORKDIR /builder
+COPY dockerize.par .
 $GITCOM
 
 FROM $($BASH_SOURCE base-image-name)

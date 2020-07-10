@@ -1,7 +1,7 @@
 #basic details
 author         <email/contact/reference>
 dockerhub-user <username>
-github         <github repo URL with software to dockerize>
+gitrepo        <github repo URL OR local git repo, with software to dockerize>
 app-name       <some name for this app>
 
 #base image stuff

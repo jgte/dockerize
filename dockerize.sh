@@ -11,7 +11,7 @@ case "$MODE" in
       | sed 's:)::g' \
       | column -t -s\#
   ;;
-  author|dockerhub-user|github|app-name|base-image-name|base-image-com|base-image-dockerfile|image-run-more) #get app parameters from dockerize.par
+  author|dockerhub-user|gitrepo|app-name|base-image-name|base-image-com|base-image-dockerfile|image-run-more) #get app parameters from dockerize.par
     if ! grep -q "$MODE" $DIR/dockerize.par
     then
       echo "ERROR: need file $DIR/dockerize.par to contain the entry '$MODE' followed by a valid value" 1>&2
@@ -95,11 +95,11 @@ case "$MODE" in
   dockerfile) #show the dockerfile
   echo "\
 FROM $($BASH_SOURCE base-image-name)
-$(for i in Author GitHub; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)
+$(for i in Author gitrepo; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)
 VOLUME $($BASH_SOURCE io-dir)
 WORKDIR $($BASH_SOURCE app-dir)
 ENTRYPOINT [\"./entrypoint.sh\"]
-RUN git clone --recurse-submodules $($BASH_SOURCE github) . && rm -fr .git $($BASH_SOURCE image-run-more)"
+RUN git clone --recurse-submodules $($BASH_SOURCE gitrepo) . && rm -fr .git $($BASH_SOURCE image-run-more)"
   ;;
   ps-a) #shows all containers IDs for the latest version of the image
     $BASH_SOURCE is-docker-running || exit 1

@@ -102,26 +102,23 @@ case "$MODE" in
     #handle different app source
     if [ -d "$APPREPO" ]
     then
-      GITCOM="RUN ls -la
-COPY $APPREPO /builder
-RUN ls -la"
-      [ -z "$RUN_MORE" ] || GITCOM+="
-RUN $RUN_MORE
-"
+      GITCOM="COPY $APPREPO /builder"
     elif [[ ! "${APPREPO/github}" == "${APPREPO}" ]]
     then
       GITCOM="RUN git clone --recurse-submodules $APPREPO . && rm -fr .git"
-      [ -z "$RUN_MORE" ] || GITCOM+=" && $RUN_MORE"
     else
       echo "ERROR: cannot handle parameter app-repo with value '$APPREPO'"
       exit 3
     fi
+    [ -z "$RUN_MORE" ] || GITCOM+="
+RUN $RUN_MORE"
     
     #build dockerfile
   echo "\
 FROM $($BASH_SOURCE base-image-name) AS builder
 WORKDIR /builder
 $GITCOM
+RUN chmod -R o+rX .
 
 FROM $($BASH_SOURCE base-image-name)
 $(for i in Author app-repo; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)

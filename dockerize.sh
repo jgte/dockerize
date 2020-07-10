@@ -117,7 +117,7 @@ RUN $RUN_MORE"
     #build dockerfile
   echo "\
 FROM $($BASH_SOURCE base-image-name) AS builder
-WORKDIR $($BASH_SOURCE app-dir)
+WORKDIR /builder
 $GITCOM
 
 FROM $($BASH_SOURCE base-image-name)
@@ -125,7 +125,7 @@ $(for i in Author app-repo; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)
 WORKDIR $($BASH_SOURCE app-dir)
 VOLUME $($BASH_SOURCE io-dir)
 ENTRYPOINT [\"./entrypoint.sh\"]
-COPY --from=builder $($BASH_SOURCE app-dir) .
+COPY --from=builder /builder/ ./
 "
   ;;
   ps-a) #shows all containers IDs for the latest version of the image

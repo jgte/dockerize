@@ -102,7 +102,7 @@ case "$MODE" in
     #handle different app source
     if [ -d "$APPREPO" ]
     then
-      GITCOM="COPY $APPREPO ."
+      GITCOM="COPY $APPREPO $($BASH_SOURCE app-dir)"
       [ -z "$RUN_MORE" ] || GITCOM+="
 RUN $RUN_MORE"
     elif [[ ! "${APPREPO/github}" == "${APPREPO}" ]]

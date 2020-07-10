@@ -93,13 +93,22 @@ case "$MODE" in
     echo docker://$($BASH_SOURCE image-name)
   ;;
   dockerfile) #show the dockerfile
+    GITREPO=$($BASH_SOURCE gitrepo)
+    #handle implicit keywords
+    if [[ ! "${GITREPO/pwd}" == "$GITREPO" ]]
+    then
+      GITCLONE=$PWD
+    else
+      GITCLONE=$GITREPO
+    fi
+    #build dockerfile
   echo "\
 FROM $($BASH_SOURCE base-image-name)
 $(for i in Author gitrepo; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)
 VOLUME $($BASH_SOURCE io-dir)
 WORKDIR $($BASH_SOURCE app-dir)
 ENTRYPOINT [\"./entrypoint.sh\"]
-RUN git clone --recurse-submodules $($BASH_SOURCE gitrepo) . && rm -fr .git $($BASH_SOURCE image-run-more)"
+RUN git clone --recurse-submodules $GITCLONE . && rm -fr .git $($BASH_SOURCE image-run-more)"
   ;;
   ps-a) #shows all containers IDs for the latest version of the image
     $BASH_SOURCE is-docker-running || exit 1

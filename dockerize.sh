@@ -180,7 +180,7 @@ COPY --from=builder /builder/ ./
     $BASH_SOURCE is-docker-running || exit 1
     $BASH_SOURCE clean-images
     $BASH_SOURCE git-push
-    $BASH_SOURCE dockerfile > $DIR
+    $BASH_SOURCE dockerfile > $DIR/dockerfile
     cd $DIR && docker build -t $($BASH_SOURCE image-name) -f dockerfile && rm -fv dockerfile && cd -
   ;;
   rebuild) #same as clean-exited clean-images build

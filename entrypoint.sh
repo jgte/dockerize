@@ -21,7 +21,7 @@ case "$1" in
       | sed 's_) #_ : _g' \
   ;;
   apps) #slows all avalable apps
-    for i in $(find $APPDIR -name \*sh -or -name \*py); do $i; done
+    find $APPDIR -name \*sh -or -name \*py
   ;;
   test-*) #tests an app; some may not yet have a test
     exec $APPDIR/test/${1%.sh}.sh --outdir $IODIR ${@:2}

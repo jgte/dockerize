@@ -16,4 +16,4 @@ else
   git ci -m "$@"
 fi
 
-git push
+git push || echo "no remote defined, continuing..."

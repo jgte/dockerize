@@ -19,7 +19,7 @@ case "$1" in
       | grep -v grep \
       | grep -v sed \
       | sed 's_) #_ : _g' \
-      | column -t
+      | column -t -s\#
   ;;
   apps) #slows all avalable apps
     find $APPDIR -name \*sh -or -name \*py

@@ -11,7 +11,7 @@ case "$MODE" in
       | sed 's:)::g' \
       | column -t -s\#
   ;;
-  author|dockerhub-user|gitrepo|app-name|base-image-name|base-image-com|base-image-dockerfile|image-run-more) #get app parameters from dockerize.par
+  author|dockerhub-user|app-repo|app-name|base-image-name|base-image-com|base-image-dockerfile|image-run-more) #get app parameters from dockerize.par
     if ! grep -q "$MODE" $DIR/dockerize.par
     then
       echo "ERROR: need file $DIR/dockerize.par to contain the entry '$MODE' followed by a valid value" 1>&2
@@ -93,22 +93,40 @@ case "$MODE" in
     echo docker://$($BASH_SOURCE image-name)
   ;;
   dockerfile) #show the dockerfile
-    GITREPO=$($BASH_SOURCE gitrepo)
+    APPREPO=$($BASH_SOURCE app-repo)
+    RUN_MORE="$($BASH_SOURCE image-run-more)"
     #handle implicit keywords
-    if [[ ! "${GITREPO/pwd}" == "$GITREPO" ]]
+    case $APPREPO in
+      pwd) APPREPO="$PWD" ;;
+    esac
+    #handle different app source
+    if [ -d "$APPREPO" ]
     then
-      GITCLONE=$PWD
+      GITCOM="COPY $APPREPO ."
+      [ -z "$RUN_MORE" ] || GITCOM+="
+RUN $RUN_MORE"
+    elif [[ ! "${APPREPO/github}" == "${APPREPO}" ]]
+    then
+      GITCOM="RUN git clone --recurse-submodules $APPREPO . && rm -fr .git"
+      [ -z "$RUN_MORE" ] || GITCOM+=" && $RUN_MORE"
     else
-      GITCLONE=$GITREPO
+      echo "ERROR: cannot handle parameter app-repo with value '$APPREPO'"
+      exit 3
     fi
+    
     #build dockerfile
   echo "\
-FROM $($BASH_SOURCE base-image-name)
-$(for i in Author gitrepo; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)
-VOLUME $($BASH_SOURCE io-dir)
+FROM $($BASH_SOURCE base-image-name) AS builder
 WORKDIR $($BASH_SOURCE app-dir)
+$GITCOM
+
+FROM $($BASH_SOURCE base-image-name)
+$(for i in Author app-repo; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)
+WORKDIR $($BASH_SOURCE app-dir)
+VOLUME $($BASH_SOURCE io-dir)
 ENTRYPOINT [\"./entrypoint.sh\"]
-RUN git clone --recurse-submodules $GITCLONE . && rm -fr .git $($BASH_SOURCE image-run-more)"
+COPY --from=builder $($BASH_SOURCE app-dir) .
+"
   ;;
   ps-a) #shows all containers IDs for the latest version of the image
     $BASH_SOURCE is-docker-running || exit 1

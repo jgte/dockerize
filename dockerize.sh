@@ -103,12 +103,10 @@ case "$MODE" in
     if [ -d "$APPREPO" ]
     then
       GITCOM="RUN ls -la
-COPY $APPREPO/ $($BASH_SOURCE app-dir)
+COPY $APPREPO/ /builder/
 RUN ls -la
 "
       [ -z "$RUN_MORE" ] || GITCOM+="
-RUN pwd
-RUN ls -la
 RUN $RUN_MORE
 "
     elif [[ ! "${APPREPO/github}" == "${APPREPO}" ]]

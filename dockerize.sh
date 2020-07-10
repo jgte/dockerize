@@ -104,6 +104,7 @@ case "$MODE" in
     then
       GITCOM="COPY $APPREPO $($BASH_SOURCE app-dir)"
       [ -z "$RUN_MORE" ] || GITCOM+="
+RUN pwd
 RUN ls -la
 RUN $RUN_MORE"
     elif [[ ! "${APPREPO/github}" == "${APPREPO}" ]]

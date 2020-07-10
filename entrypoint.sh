@@ -4,6 +4,12 @@ DIR=$(cd $(dirname $BASH_SOURCE);pwd)
 APPDIR=$($DIR/dockerize.sh app-dir)
 IODIR=$($DIR/dockerize.sh io-dir)
 
+if [ $# -eq 0 ]
+then
+  $BASH_SOURCE help
+  exit
+fi
+
 case "$1" in
   sh) #run the shell instead of an app
     exec /bin/bash -i
@@ -15,7 +21,7 @@ case "$1" in
       | sed 's_) #_ : _g' \
   ;;
   apps) #slows all avalable apps
-    for i in $(find $APPDIR -name \*sh -or -name \*py); do basename $i; done
+    for i in $(find $APPDIR -name \*sh -or -name \*py); do $i; done
   ;;
   test-*) #tests an app; some may not yet have a test
     exec $APPDIR/test/${1%.sh}.sh --outdir $IODIR ${@:2}
@@ -34,9 +40,11 @@ $($BASH_SOURCE modes)
 
 app-name is one of:
 $($BASH_SOURCE apps)
+
+Any sequence of commands that does not start with one of the modes is passed transparently to the container.
 "
   ;;
-  *) #transparently pass all other arguments to the app
-    exec $APPDIR/$@
+  *) #transparently pass all other arguments to the container
+    exec $@
   ;;
 esac

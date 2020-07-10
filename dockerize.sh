@@ -102,11 +102,15 @@ case "$MODE" in
     #handle different app source
     if [ -d "$APPREPO" ]
     then
-      GITCOM="COPY $APPREPO $($BASH_SOURCE app-dir)"
+      GITCOM="RUN ls -la
+COPY $APPREPO/ $($BASH_SOURCE app-dir)
+RUN ls -la
+"
       [ -z "$RUN_MORE" ] || GITCOM+="
 RUN pwd
 RUN ls -la
-RUN $RUN_MORE"
+RUN $RUN_MORE
+"
     elif [[ ! "${APPREPO/github}" == "${APPREPO}" ]]
     then
       GITCOM="RUN git clone --recurse-submodules $APPREPO . && rm -fr .git"
@@ -120,7 +124,6 @@ RUN $RUN_MORE"
   echo "\
 FROM $($BASH_SOURCE base-image-name) AS builder
 WORKDIR /builder
-COPY dockerize.par .
 $GITCOM
 
 FROM $($BASH_SOURCE base-image-name)

@@ -103,7 +103,7 @@ case "$MODE" in
     if [ -d "$APPREPO" ]
     then
       GITCOM="RUN ls -la
-COPY $APPREPO/ /builder/
+COPY $APPREPO /builder
 RUN ls -la
 "
       [ -z "$RUN_MORE" ] || GITCOM+="

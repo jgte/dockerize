@@ -181,7 +181,7 @@ COPY --from=builder /builder/ ./
     $BASH_SOURCE clean-images
     $BASH_SOURCE git-push
     $BASH_SOURCE dockerfile > $DIR/dockerfile
-    cd $DIR && docker build -t $($BASH_SOURCE image-name) -f dockerfile && rm -fv dockerfile && cd -
+    cd $DIR && docker build . -t $($BASH_SOURCE image-name) -f dockerfile && rm -fv dockerfile && cd -
   ;;
   rebuild) #same as clean-exited clean-images build
     for i in clean-all build push

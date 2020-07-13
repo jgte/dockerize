@@ -48,6 +48,9 @@ case "$MODE" in
       then
         echo "FROM $BASE_IMAGE_DOCKERFILE"
         echo "ENV DEBIAN_FRONTEND=noninteractive"
+      elif [[ ! "${BASE_IMAGE_DOCKERFILE/alpine}" == "$BASE_IMAGE_DOCKERFILE" ]]
+      then
+        echo "FROM $BASE_IMAGE_DOCKERFILE"
       elif [[ ! "${BASE_IMAGE_DOCKERFILE/https}" == "$BASE_IMAGE_DOCKERFILE" ]]
       then
         BDF=/tmp/$(basename $BASH_SOURCE).$($BASH_SOURCE app-name).base_dockerfile.$$

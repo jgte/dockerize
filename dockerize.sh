@@ -4,7 +4,7 @@ DIR=$(cd $(dirname $BASH_SOURCE);pwd)
 
 
 MODE="$(echo "$1"| tr '[:upper:]' '[:lower:]')"
-case "$MODE" in  
+case "$MODE" in
   modes|help|-h) #shows all available modes
     grep ') #' $BASH_SOURCE \
       | grep -v grep \
@@ -118,7 +118,7 @@ case "$MODE" in
     fi
     [ -z "$RUN_MORE" ] || GITCOM+="
 RUN $RUN_MORE"
-    
+
     #build dockerfile
   echo "\
 FROM $($BASH_SOURCE base-image-name) AS builder
@@ -187,7 +187,7 @@ COPY --from=builder /builder/ ./
     cd $DIR && docker build . -t $($BASH_SOURCE image-name) -f dockerfile && rm -fv dockerfile && cd -
   ;;
   rebuild) #same as clean-exited clean-images build
-    for i in clean-all build 
+    for i in clean-all build
     do
       $BASH_SOURCE $i || exit $?
     done
@@ -231,7 +231,7 @@ COPY --from=builder /builder/ ./
   ;;
   s-com) #shows the command used to run the app it the singularity container
    echo singularity exec -B $PWD:/$($BASH_SOURCE io-dir) --cleanenv $($BASH_SOURCE s-image) $($BASH_SOURCE app-dir)/entrypoint.sh ${@:2}
-  ;; 
+  ;;
   s-run) #spins up a new singularity container and passes all aditional arguments to it
     $BASH_SOURCE s-module || true
     [ -e $($BASH_SOURCE s-image) ] || $BASH_SOURCE s-pull

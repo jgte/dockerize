@@ -87,7 +87,10 @@ case "$MODE" in
   ;;
   base-sh) #spins up a new container and starts an interactive shell in it
     $BASH_SOURCE is-docker-running || exit 1
-    docker run -it --rm $($BASH_SOURCE base-image-name) /bin/bash
+    LOCAL_MNT=/tmp/$($BASH_SOURCE app-name)
+    CONTN_MNT=$($BASH_SOURCE io-dir)
+    mkdir -p $LOCAL_MNT
+    docker run -v $LOCAL_MNT:$CONTN_MNT -it --rm $($BASH_SOURCE base-image-name) /bin/bash
   ;;
   image-name) #shows the image name
     echo $($BASH_SOURCE dockerhub-user)/$($BASH_SOURCE app-name):$($BASH_SOURCE version)

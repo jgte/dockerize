@@ -8,6 +8,7 @@ app-name       <some name for this app>
 base-image-dockerfile <dockerfile FROM value, e.g. 'ubuntu:20.04' OR dockerfile URL>
 base-image-com        <dockerfile commands to append to base-image-dockerfile, e.g. RUN apt-get update && apt-get install -y build-essential && apt-get autoremove -y>
 base-image-name       <docker hub name of the resulting base image, e.g. spacegravimetry/gmt>
+#NOTICE: if the base image is already completely defined by the base-image-dockerfile, then set base-image-name the same as base-image-dockerfile and leave base-image-com empty (or don't define it)
 
-#app image stuff: 
+#app image stuff:
 image-run-more <additional dockerfile RUN commands when building the app image, always start with '&&', e.g. '&& make'; leave empty if not relevant>

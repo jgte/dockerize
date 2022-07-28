@@ -2,6 +2,11 @@
 
 DIR=$(cd $(dirname $BASH_SOURCE);pwd)
 
+if [ $# -eq 0 ]
+then
+  $BASH_SOURCE help
+  exit
+fi
 
 MODE="$(echo "$1"| tr '[:upper:]' '[:lower:]')"
 case "$MODE" in
@@ -33,7 +38,8 @@ case "$MODE" in
   ;;
   base-image|base-images) #shows all images relevant to this app
     $BASH_SOURCE is-docker-running || exit 1
-    docker images | grep $($BASH_SOURCE base-image-name)
+    BASE_IMAGE=$($BASH_SOURCE base-image-name); BASE_IMAGE=${BASE_IMAGE%:*}
+    docker images | grep $BASE_IMAGE
   ;;
   base-dockerfile) #shows the dockerfile of the base image
     BASE_IMAGE_DOCKERFILE="$($BASH_SOURCE base-image-dockerfile)"

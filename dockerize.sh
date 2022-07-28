@@ -1,5 +1,10 @@
 #!/bin/bash -ue
 
+#This script intends to make it easier to build containers. The procedure is:
+# - git close this repo inside your app directory, so that you'll have a new 'dockerize' sub-dir
+# - link the dockerize.sh script from that directory into the current one
+# - copy the dockerize.par from that directory into the current one; edit it as needed.
+
 DIR=$(cd $(dirname $BASH_SOURCE);pwd)
 
 if [ $# -eq 0 ]
@@ -32,6 +37,9 @@ case "$MODE" in
   ;;
   version) #shows the latest version of the git repo (to be used as tag for the docker image)
     git -C $DIR log --pretty=format:%ad --date=short | head -n1
+  ;;
+  pwd) #shows the current directory
+    echo $DIR
   ;;
   is-docker-running) #checks if the docker deamon is running
     docker ps -a > /dev/null && exit 0 || exit 1

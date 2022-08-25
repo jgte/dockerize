@@ -1,8 +1,7 @@
 #!/bin/bash
 
-DIR=$(cd $(dirname $BASH_SOURCE);pwd)
-APPDIR=$($DIR/dockerize.sh app-dir)
-IODIR=$($DIR/dockerize.sh io-dir)
+APPDIR={APP-NAME}
+IODIR=/iodir
 
 if [ $# -eq 0 ]
 then

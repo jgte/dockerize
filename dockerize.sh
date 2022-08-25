@@ -1,11 +1,24 @@
 #!/bin/bash -ue
 
-#This script intends to make it easier to build containers. The procedure is:
-# - git close this repo inside your app directory, so that you'll have a new 'dockerize' sub-dir
-# - link the dockerize.sh script from that directory into the current one
-# - copy the dockerize.par from that directory into the current one; edit it as needed.
+#This script intends to make it easier to build containers. There are 3 directories of relevance:
+# - DIR            : the directory this script is run
+# - DIR/dockerize  : dir where this repo is cloned
+# - <app-repo>     : dir with the software to be dockerized or github URL
+#
+# The procedure is:
+# - git close this repo inside DIR, so that you'll have a new 'dockerize' sub-dir
+# - link the DIR/dockerize/dockerize.sh script into DIR
+# - copy the DIR/dockerize/dockerize.par file into DIR; edit it as needed
+# - copy the DIR/dockerize/entrypoint.sh file into DIR; change if necessary
+# - run the relevant commands in this script, e.g.:
+#   - ./dockerize.sh build sh
+#
+# The relevant directores in the container are:
+# - /iodir      : points to DIR (static value, must be in agreement with entrypoint.sh)
+# - /<app-name> : contains the contents of DIR/<app-repo>, is set as the WORKDIR in the container
 
 DIR=$(cd $(dirname $BASH_SOURCE);pwd)
+AUTO_GIT_CI=false
 
 if [ $# -eq 0 ]
 then
@@ -27,7 +40,7 @@ case "$MODE" in
       echo "ERROR: need file $DIR/dockerize.par to contain the entry '$MODE' followed by a valid value" 1>&2
       exit 3
     fi
-    awk '/^'$MODE' / {if (NF==2) {print $2} else {for (i=2; i<=NF; i++) printf("%s ",$i)}}' $DIR/dockerize.par
+    awk '/^'$MODE' / {if (NF==2) {print $2} else {for (i=2; i<=NF; i++) printf("%s ",$i); printf("\n")}}' $DIR/dockerize.par
   ;;
   app-dir) #shows the directory where the app will be sitting inside the container
     echo /$($BASH_SOURCE app-name)
@@ -47,7 +60,12 @@ case "$MODE" in
   base-image|base-images) #shows all images relevant to this app
     $BASH_SOURCE is-docker-running || exit 1
     BASE_IMAGE=$($BASH_SOURCE base-image-name); BASE_IMAGE=${BASE_IMAGE%:*}
-    docker images | grep $BASE_IMAGE
+    if ! docker images | grep $BASE_IMAGE
+    then
+      echo "NOTICE: image $($BASH_SOURCE base-image-name) missing, pulling it:" 1>&2
+      docker pull $($BASH_SOURCE base-image-name)  1>&2
+      $BASH_SOURCE base-image
+    fi
   ;;
   base-dockerfile) #shows the dockerfile of the base image
     BASE_IMAGE_DOCKERFILE="$($BASH_SOURCE base-image-dockerfile)"
@@ -122,7 +140,7 @@ case "$MODE" in
     #handle different app source
     if [ -d "$APPREPO" ]
     then
-      GITCOM="COPY $APPREPO /builder"
+      GITCOM="COPY $APPREPO ."
     elif [[ ! "${APPREPO/github}" == "${APPREPO}" ]]
     then
       GITCOM="RUN git clone --recurse-submodules $APPREPO . && rm -fr .git"
@@ -131,21 +149,20 @@ case "$MODE" in
       exit 3
     fi
     [ -z "$RUN_MORE" ] || GITCOM+="
-RUN $RUN_MORE"
-
+$RUN_MORE"
+    #shortcuts
+    APP_DIR=$($BASH_SOURCE app-dir)
     #build dockerfile
   echo "\
-FROM $($BASH_SOURCE base-image-name) AS builder
-WORKDIR /builder
-$GITCOM
-RUN chmod -R o+rX .
-
 FROM $($BASH_SOURCE base-image-name)
-$(for i in Author app-repo; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)
-WORKDIR $($BASH_SOURCE app-dir)
 VOLUME $($BASH_SOURCE io-dir)
-ENTRYPOINT [\"./entrypoint.sh\"]
-COPY --from=builder /builder/ ./
+WORKDIR $($BASH_SOURCE app-dir)
+$GITCOM
+COPY entrypoint.sh $APP_DIR/
+ENTRYPOINT [\"$APP_DIR/entrypoint.sh\"]
+CMD [\"help\"]
+RUN chmod -R a+rX $APP_DIR/*.sh $APP_DIR/*.pl $APP_DIR/*.rb $APP_DIR/*.py || true
+$(for i in Author; do echo "LABEL $i \"$($BASH_SOURCE $i)\""; done)
 "
   ;;
   ps-a) #shows all containers IDs for the latest version of the image
@@ -193,10 +210,36 @@ COPY --from=builder /builder/ ./
     $BASH_SOURCE is-docker-running || exit 1
     docker push $($BASH_SOURCE image-name)
   ;;
+  ready-to-build) #does some basic sanity checks
+    #update the entry point, unless that has already been done (contemplates tweaking this file)
+    [ ! -s $DIR/entrypoint.sh ] && \
+      cat $DIR/dockerize/entrypoint.sh \
+      | sed 's:{APP-NAME}:'$($BASH_SOURCE  app-dir)':g' \
+      > $DIR/entrypoint.sh
+    chmod u+x $DIR/entrypoint.sh
+    #make sure necessary files exist
+    for i in dockerize.par
+    do
+      if [ ! -s $DIR/$i ]; then
+        echo "ERROR: missing: $DIR/$i"
+        exit 3
+      fi
+    done
+    #make sure all necessary variables are set
+    for i in base-image dockerhub-user app-name app-repo
+    do
+      if [ -z "$($BASH_SOURCE $i)" ]
+      then
+        echo "ERROR: value of parameter '$i' is unset"
+        exit 3
+      fi
+    done
+  ;;
   build) #build the docker image
     $BASH_SOURCE is-docker-running || exit 1
+    $BASH_SOURCE ready-to-build
     $BASH_SOURCE clean-images
-    $BASH_SOURCE git-push
+    $AUTO_GIT_CI && $BASH_SOURCE git-push
     $BASH_SOURCE dockerfile > $DIR/dockerfile
     cd $DIR && docker build . -t $($BASH_SOURCE image-name) -f dockerfile && rm -fv dockerfile && cd -
   ;;

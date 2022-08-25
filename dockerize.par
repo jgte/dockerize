@@ -11,4 +11,4 @@ base-image-name       <docker hub name of the resulting base image, e.g. spacegr
 #NOTICE: if the base image is already completely defined by the base-image-dockerfile, then set base-image-name the same as base-image-dockerfile and leave base-image-com empty (or don't define it)
 
 #app image stuff:
-image-run-more <additional dockerfile RUN commands when building the app image, always start with '&&', e.g. '&& make'; leave empty if not relevant>
+image-run-more <additional dockerfile RUN commands when building the app image, e.g. RUN pwd && ls; leave empty if not relevant>
